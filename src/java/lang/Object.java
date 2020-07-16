@@ -36,6 +36,24 @@ package java.lang;
  */
 public class Object {
 
+    /**
+     * 2020.07.15
+     * native修饰符号：所修饰的方法是由非java代码实现
+     *
+     * 一个java程序如果想调用本地方法，需要执行两个步骤：
+     * 1、通过system.loadLibrary()将包含本地方法实现的动态文件加载进内存
+     * 2、当java程序调用方法的时候，虚拟机在加载的动态文件中定位并且去链接它，从而执行本地方法
+     * registerNatives就是取代了第二部，让程序主动将方法链接到调用方
+     * registerNatives方法是为了让java程序调用本地方法更加方便
+     */
+
+    /**
+     * static修饰成员变量的时候，该变量存放在静态区，可以被所有对象调用
+     * static修饰静态块时，在加载类的时候就运行静态代码块，加载之后再执行构造器
+     */
+    /**
+     * 源码里面一个静态块，一个静态方法和一个没有显示的默认构造方法，没有成员变量。可以看出来 registerNatives() 方法只会被调用一次。
+     */
     private static native void registerNatives();
     static {
         registerNatives();
@@ -59,6 +77,11 @@ public class Object {
      * @return The {@code Class} object that represents the runtime
      *         class of this object.
      * @jls 15.8.2 Class Literals
+     */
+    /**
+     * 主要作用是返回正在运行的类别（Class）
+     * getClass()方法被native修饰，告诉 JVM 自己去调用,可以被重写。同时被 final 修饰，所以不能被子类重写。
+     * @return
      */
     public final native Class<?> getClass();
 
@@ -96,6 +119,18 @@ public class Object {
      * @return  a hash code value for this object.
      * @see     java.lang.Object#equals(java.lang.Object)
      * @see     java.lang.System#identityHashCode
+     */
+
+    /**
+     * 该方法主要是返回对象的hashcode，主要是为了一些哈希表的数据结构服务的，比如 HashMap 。
+     * @return
+     */
+
+    /**
+     * 在 Java 中 hashcode 与 对象是否相等密切相关。 如果两个对象相等，则 hashcode 一定相等，
+     * 但是 hashcode 相等，两个对象不一定相等。如果 hashcode 不相等，那么这两个对象一定不相等。
+     * 或许可以用散列冲突来理解
+     * @return
      */
     public native int hashCode();
 
@@ -144,6 +179,11 @@ public class Object {
      *          argument; {@code false} otherwise.
      * @see     #hashCode()
      * @see     java.util.HashMap
+     */
+    /**
+     * 该方法可以被重写，主要用来判断两个对象是否相等。
+     * @param obj
+     * @return
      */
     public boolean equals(Object obj) {
         return (this == obj);
@@ -209,6 +249,15 @@ public class Object {
      *               be cloned.
      * @see java.lang.Cloneable
      */
+    /**
+     * 该方法被native修饰，告诉 JVM 自己去调用。当我们在自定义类中使用该方法的时候，
+     * 需要继承一个 Cloneable 接口，否则会抛出无法克隆的异常。该方法是一个浅复制，不是深复制。
+     *
+     * 浅拷贝：对基本数据类型进行值传递，对引用数据类型进行引用传递般的拷贝，此为浅拷贝。
+     * 深拷贝：对基本数据类型进行值传递，对引用数据类型，创建一个新的对象，并复制其内容，此为深拷贝。
+     * @return
+     * @throws CloneNotSupportedException
+     */
     protected native Object clone() throws CloneNotSupportedException;
 
     /**
@@ -267,6 +316,9 @@ public class Object {
      *               the owner of this object's monitor.
      * @see        java.lang.Object#notifyAll()
      * @see        java.lang.Object#wait()
+     */
+    /**
+     * notify() 随机唤醒一个等待线程，notifyAll() 唤醒全部的等待线程。wait() 方法让当前线程进入等待状态。
      */
     public final native void notify();
 
@@ -551,6 +603,11 @@ public class Object {
      * @see java.lang.ref.WeakReference
      * @see java.lang.ref.PhantomReference
      * @jls 12.6 Finalization of Class Instances
+     */
+    /**
+     * 当垃圾回收器确定不再有对该对象的引用时，
+     * 由垃圾回收器在对象上调用该方法。该方法只会被调用一次。
+     * @throws Throwable
      */
     protected void finalize() throws Throwable { }
 }
