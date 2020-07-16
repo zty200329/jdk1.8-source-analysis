@@ -6,3 +6,7 @@
 * 最后结合子类和继承的父类或接口进行解读
 
 [源码阅读顺序参照笔记](https://blog.csdn.net/qq_21033663/article/details/79571506)
+
+# 我的阅读笔记
+## java.lang
+[Object](https://blog.csdn.net/qq_43561507/article/details/107398267)
