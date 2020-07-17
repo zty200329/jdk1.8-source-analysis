@@ -9,4 +9,5 @@
 
 # 我的阅读笔记
 ## java.lang
-[Object](https://blog.csdn.net/qq_43561507/article/details/107398267)
+[Object](https://blog.csdn.net/qq_43561507/article/details/107398267)  
+[String](https://blog.csdn.net/qq_43561507/article/details/107405982)

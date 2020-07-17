@@ -108,11 +108,21 @@ import java.util.regex.PatternSyntaxException;
  * @since   JDK1.0
  */
 
+/**
+ * final 关键字修饰的类不能进行被继承，同时String实现了Comparable，CharSequence，Serializable接口
+ */
 public final class String
     implements java.io.Serializable, Comparable<String>, CharSequence {
     /** The value is used for character storage. */
+    /**
+     * 定义用于字符存储的value数组，由于使用了final修饰，
+     * 表示该value[]一经初始化就不能进行修改
+     */
     private final char value[];
 
+    /**
+     * 缓存字符串的hash值
+     */
     /** Cache the hash code for the string */
     private int hash; // Default to 0
 
@@ -134,6 +144,9 @@ public final class String
      * an empty character sequence.  Note that use of this constructor is
      * unnecessary since Strings are immutable.
      */
+    /**
+     * 初始化一个新创建的{@code String}对象，使其表示一个空字符序列。注意，由于字符串是不可变的，因此不需要使用此构造函数。
+     */
     public String() {
         this.value = "".value;
     }
@@ -148,6 +161,10 @@ public final class String
      * @param  original
      *         A {@code String}
      */
+    /**
+     * 使用字符串构造函数
+     * @param original
+     */
     public String(String original) {
         this.value = original.value;
         this.hash = original.hash;
@@ -161,6 +178,10 @@ public final class String
      *
      * @param  value
      *         The initial value of the string
+     */
+    /**
+     * 字符串数组构造函数
+     * @param value
      */
     public String(char value[]) {
         this.value = Arrays.copyOf(value, value.length);
@@ -186,6 +207,13 @@ public final class String
      * @throws  IndexOutOfBoundsException
      *          If the {@code offset} and {@code count} arguments index
      *          characters outside the bounds of the {@code value} array
+     */
+    /**
+     * offset表示第一个被截取的字符在数组value[]中的下标，count表示从此字符开始向后截取的字符的数量
+     * 将value[]数组按照传入的下标和指定的截取数组数据的数量进行截取，并且创建一个内容为此的string对象
+     * @param value
+     * @param offset
+     * @param count
      */
     public String(char value[], int offset, int count) {
         if (offset < 0) {
@@ -235,6 +263,12 @@ public final class String
      *
      * @since  1.5
      */
+    /**
+     * 从数组下标为offset开始顺序取出数组codePoints[]中count个整数，并根据此uncode代码点所对应的字符创建一个string对象
+     * @param codePoints
+     * @param offset
+     * @param count
+     */
     public String(int[] codePoints, int offset, int count) {
         if (offset < 0) {
             throw new StringIndexOutOfBoundsException(offset);
@@ -256,18 +290,24 @@ public final class String
         final int end = offset + count;
 
         // Pass 1: Compute precise size of char[]
+        /**
+         * Pass 1: Compute(计算) precise(精确的) size of char[] 用于下面创建v数组时的数组长度的确定
+         */
         int n = count;
         for (int i = offset; i < end; i++) {
             int c = codePoints[i];
+            //判断代码点是不是BMP(此方法在1.6之前没有)
             if (Character.isBmpCodePoint(c))
                 continue;
+            //确定指定的代码点是否是一个有效的Unicode代码点值
             else if (Character.isValidCodePoint(c))
                 n++;
             else throw new IllegalArgumentException(Integer.toString(c));
         }
 
+        // Pass 2: Allocate(分配) and fill in(填充) char[]
         // Pass 2: Allocate and fill in char[]
-        final char[] v = new char[n];
+        final char[] v = new char[n];//用于存储要转成string对象中字符的字符
 
         for (int i = offset, j = 0; i < end; i++, j++) {
             int c = codePoints[i];
@@ -974,26 +1014,46 @@ public final class String
      * @see  #equalsIgnoreCase(String)
      */
     public boolean equals(Object anObject) {
+        /**
+         * 如果引用是同一个对象，返回真
+         */
         if (this == anObject) {
             return true;
         }
+        //如果不是String类型的数据，返回假
         if (anObject instanceof String) {
             String anotherString = (String)anObject;
             int n = value.length;
+            //如果char数组长度不相等，返回假
             if (n == anotherString.value.length) {
                 char v1[] = value;
                 char v2[] = anotherString.value;
                 int i = 0;
+                //从后往前单个字符判断，如果有不相等，返回假
                 while (n-- != 0) {
                     if (v1[i] != v2[i])
                         return false;
                     i++;
                 }
+                //每个字符都相等，返回真
                 return true;
             }
         }
         return false;
     }
+    /**
+     * equals方法经常用得到，它用来判断两个对象从实际意义上是否相等，String对象判断规则：
+     *
+     * 内存地址相同，则为真。
+     *
+     * 如果对象类型不是String类型，则为假。否则继续判断。
+     *
+     * 如果对象长度不相等，则为假。否则继续判断。
+     *
+     * 从后往前，判断String类中char数组value的单个字符是否相等，有不相等则为假。如果一直相等直到第一个数，则返回真。
+     *
+     * 由此可以看出，如果对两个超长的字符串进行比较还是非常费时间的。
+     */
 
     /**
      * Compares this string to the specified {@code StringBuffer}.  The result
@@ -1151,13 +1211,17 @@ public final class String
      *          lexicographically greater than the string argument.
      */
     public int compareTo(String anotherString) {
+        //自身对象字符串长度len1
         int len1 = value.length;
+        //被比较对象的字符串长度len2
         int len2 = anotherString.value.length;
+        //取两个字符串长度的最小值lim
         int lim = Math.min(len1, len2);
         char v1[] = value;
         char v2[] = anotherString.value;
 
         int k = 0;
+        //从value的第一个字符开始到最小长度lim处为止，如果字符不相等，返回自身（对象不相等处字符-被比较对象不相等字符）
         while (k < lim) {
             char c1 = v1[k];
             char c2 = v2[k];
@@ -1166,8 +1230,13 @@ public final class String
             }
             k++;
         }
+        //如果前面都相等，则返回（自身长度-被比较对象长度）
         return len1 - len2;
     }
+    /**
+     * 这个方法写的很巧妙，先从0开始判断字符大小。如果两个对象能比较字符的地方比较完了还相等，
+     * 就直接返回自身长度减被比较对象长度，如果两个字符串长度相等，则返回的是0，巧妙地判断了三种情况。
+     */
 
     /**
      * A Comparator that orders {@code String} objects as by
@@ -1464,17 +1533,25 @@ public final class String
      */
     public int hashCode() {
         int h = hash;
+        //如果hash没有被计算过，并且字符串不为空，则进行hashCode计算
         if (h == 0 && value.length > 0) {
             char val[] = value;
 
+
+            //计算过程
+            //s[0]*31^(n-1) + s[1]*31^(n-2) + ... + s[n-1]
             for (int i = 0; i < value.length; i++) {
                 h = 31 * h + val[i];
             }
+            //hash赋值
             hash = h;
         }
         return h;
     }
-
+    /**
+     * String类重写了hashCode方法，Object中的hashCode方法是一个Native调用。String类的hash采用多项式计算得来，
+     * 我们完全可以通过不相同的字符串得出同样的hash，所以两个String对象的hashCode相同，并不代表两个String是一样的。
+     */
     /**
      * Returns the index within this string of the first occurrence of
      * the specified character. If a character with value
@@ -2023,8 +2100,14 @@ public final class String
      * @return  a string that represents the concatenation of this object's
      *          characters followed by the string argument's characters.
      */
+    /**
+     * concat方法也是经常用的方法之一，它先判断被添加字符串是否为空来决定要不要创建新的对象。
+     * @param str
+     * @return
+     */
     public String concat(String str) {
         int otherLen = str.length();
+        //如果被添加的字符串为空，返回对象本身
         if (otherLen == 0) {
             return this;
         }
@@ -2063,17 +2146,26 @@ public final class String
      * @return  a string derived from this string by replacing every
      *          occurrence of {@code oldChar} with {@code newChar}.
      */
+    /**
+     * 这个方法也有讨巧的地方，例如最开始先找出旧值出现的位置，这样节省了一部分对比的时间。
+     * @param oldChar
+     * @param newChar
+     * @return
+     */
     public String replace(char oldChar, char newChar) {
+        //新旧值先对比
         if (oldChar != newChar) {
             int len = value.length;
             int i = -1;
             char[] val = value; /* avoid getfield opcode */
 
+            //找到旧值最开始出现的位置
             while (++i < len) {
                 if (val[i] == oldChar) {
                     break;
                 }
             }
+            //从那个位置开始，直到末尾，用新值代替出现的旧值
             if (i < len) {
                 char buf[] = new char[len];
                 for (int j = 0; j < i; j++) {
@@ -2869,14 +2961,20 @@ public final class String
         int st = 0;
         char[] val = value;    /* avoid getfield opcode */
 
+        //找到字符串前段没有空格的位置
         while ((st < len) && (val[st] <= ' ')) {
             st++;
         }
+        //找到字符串末尾没有空格的位置
         while ((st < len) && (val[len - 1] <= ' ')) {
             len--;
         }
+        //如果前后都没有出现空格，返回字符串本身
         return ((st > 0) || (len < value.length)) ? substring(st, len) : this;
     }
+    /**
+     * trim方法用起来也6的飞起
+     */
 
     /**
      * This object (which is already a string!) is itself returned.
@@ -3163,6 +3261,11 @@ public final class String
      *
      * @return  a string that has the same contents as this string, but is
      *          guaranteed to be from a pool of unique strings.
+     */
+    /**
+     * intern方法是Native调用，它的作用是在方法区中的常量池里通过equals方法寻找等值的对象，
+     * 如果没有找到则在常量池中开辟一片空间存放字符串并返回该对应String的引用，否则直接返回常量池中已存在String对象的引用。
+     * @return
      */
     public native String intern();
 }
