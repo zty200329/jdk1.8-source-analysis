@@ -73,10 +73,22 @@ package java.lang;
  * @see         java.lang.String
  * @since       1.5
  */
+
+/**
+ * char[] value; 底层都是用字符数组char[]实现，存储字符串，默认的大小为16。
+ * 在父类 AbstractStringBuilder 中定义的。String的value数组使用final修饰，
+ * 不能变动，StringBuffer和StringBuilder的value数组没有final修饰，是可变的。
+ * 关于数组的大小，默认的初始化容量是16。这个数有木有想起了Map的实现子类的初始容量。
+ * 假如初始化的时候，传入字符串，则最终的容量将是 (传入字符串的长度 + 16) 。
+ */
 public final class StringBuilder
     extends AbstractStringBuilder
     implements java.io.Serializable, CharSequence
 {
+    /**
+     * 都继承了 AbstractStringBuilder ，实现了 Serializable 和 CharSequence 接口。
+     * final类型，不能再派生子类
+     */
 
     /** use serialVersionUID for interoperability */
     static final long serialVersionUID = 4383685877147921099L;

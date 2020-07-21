@@ -44,6 +44,17 @@ import java.util.Arrays;
  * @author      Ulf Zibis
  * @since       1.5
  */
+
+/**
+ * AbstractStringBuilder是一个抽象类，也是StringBuilder和StringBuffer类的父类，这个类是这两个类的共同点的体现。
+ */
+
+/**
+ * 从类图中可以看出，
+ *
+ * 该类实现了Appendable接口，它的实现类的对象能够被添加 char 序列和值。如果某个类的实例打算接收取自 java.util.Formatter 的格式化输出，那么该类必须实现 Appendable 接口。
+ * 该类实现了CharSequence接口，CharSequence 是 char 值的一个可读序列。此接口对许多不同种类的 char 序列提供统一的只读访问
+ */
 abstract class AbstractStringBuilder implements Appendable, CharSequence {
     /**
      * The value is used for character storage.
@@ -64,6 +75,10 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
     /**
      * Creates an AbstractStringBuilder of the specified capacity.
      */
+    /**
+     * 创建abstractstringbuilder实现类的对象时指定缓冲区大小为capacity
+     * @param capacity
+     */
     AbstractStringBuilder(int capacity) {
         value = new char[capacity];
     }
@@ -74,6 +89,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  the length of the sequence of characters currently
      *          represented by this object
      */
+    //返回已经存储字符序列的实际长度，即count的值。
     @Override
     public int length() {
         return count;
@@ -86,6 +102,8 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *
      * @return  the current capacity
      */
+    //返回当前value可以存储的字符容量，即在下一次重新申请内存之前能存储字符序列的长度。
+    // 新添加元素的时候，可能会对数组进行扩容。
     public int capacity() {
         return value.length;
     }
@@ -106,6 +124,13 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *
      * @param   minimumCapacity   the minimum desired capacity.
      */
+    /**
+     * 该方法是用来确保容量至少等于指定的最小值,是该类的核心也是其两个实现类StringBuffer和StringBuilder的核心。
+     * 通过这种方式来实现数组的动态扩容。下面来看下其具体逻辑。
+     * @param minimumCapacity
+     */
+    //1.判断入参minimumCapacity是否有效，即是否大于0，
+    //大于0执行ensureCapacityInternal方法，小于等于0则忽略。
     public void ensureCapacity(int minimumCapacity) {
         if (minimumCapacity > 0)
             ensureCapacityInternal(minimumCapacity);
@@ -118,6 +143,8 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * If {@code minimumCapacity} is non positive due to numeric
      * overflow, this method throws {@code OutOfMemoryError}.
      */
+    //2.判断入参容量值是否比原容量大，如果大于原容量，执行扩容操作,实际上就是创建一个新容量的数组，
+    // 然后再将原数组中的内容拷贝到新数组中，如果小于或等于原容量则忽略。
     private void ensureCapacityInternal(int minimumCapacity) {
         // overflow-conscious code
         if (minimumCapacity - value.length > 0) {
@@ -145,6 +172,15 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws OutOfMemoryError if minCapacity is less than zero or
      *         greater than Integer.MAX_VALUE
      */
+    /**
+     * 3.计算新数组的容量大小，新容量取原容量的2倍加2和入参minCapacity中较大者。
+     * 然后再进行一些范围校验。新容量必需在int所支持的范围内，之所以有<=0判断是因为，
+     * 在执行 (value.length << 1) + 2操作后，可能会出现int溢出的情况。
+     * 如果溢出或是大于所支持的最大容量(MAX_ARRAY_SIZE为int所支持的最大值减8)，
+     * 则进行hugeCapacity计算，否则取newCapacity
+     * @param minCapacity
+     * @return
+     */
     private int newCapacity(int minCapacity) {
         // overflow-conscious code
         int newCapacity = (value.length << 1) + 2;
@@ -156,6 +192,13 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
             : newCapacity;
     }
 
+    /**
+     * 4.这一步先进行范围检查，必须在int所支持的最大范围内。
+     * 然后在minCapacity与MAX_ARRAY_SIZE之间取较大者，
+     * 此方法取的范围是Integer.MAX_VALUE - 8到Integer.MAX_VALUE之间的范围。
+     * @param minCapacity
+     * @return
+     */
     private int hugeCapacity(int minCapacity) {
         if (Integer.MAX_VALUE - minCapacity < 0) { // overflow
             throw new OutOfMemoryError();
@@ -165,11 +208,24 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
     }
 
     /**
+     * 5.总结：
+     * 1.通过value = Arrays.copyOf(value,newCapacity(minimumCapacity));进行扩容
+     * 2.新容量取 minCapacity，原容量乘以2再加上2中较大的，但不能大于int所支持的最大范围。
+     * 3.在实际环境中在容量远没达到MAX_ARRAY_SIZE的时候就报OutOfMemoryError异常了，其实就是在复制的时候创建了数组char[] copy = new char[newLength];这里支持不了那么大的内存消耗，可以通过 -Xms256M -Xmx768M设置最大内存。
+     */
+
+    /**
      * Attempts to reduce storage used for the character sequence.
      * If the buffer is larger than necessary to hold its current sequence of
      * characters, then it may be resized to become more space efficient.
      * Calling this method may, but is not required to, affect the value
      * returned by a subsequent call to the {@link #capacity()} method.
+     */
+    /**
+     * 减少字符序列的使用空间，比如申请了100字符长度的空间，但是现在只用了60个，
+     * 那剩下的40个无用的空间放在那里占内存，可以调用此方法释放掉未用到的内存。
+     * 原理很简单，只申请一个count大小的数组把原数组中的内容复制到新数组中，
+     * 原来的数组由于没有被任何引用所指向，之后会被gc回收。
      */
     public void trimToSize() {
         if (count < value.length) {
@@ -202,6 +258,11 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws     IndexOutOfBoundsException  if the
      *               {@code newLength} argument is negative.
      */
+    /**
+     * 用空字符填充未使用的空间。首先对数组进行扩容，
+     * 然后将剩余未使用的空间全部填充为'0'字符。
+     * @param newLength
+     */
     public void setLength(int newLength) {
         if (newLength < 0)
             throw new StringIndexOutOfBoundsException(newLength);
@@ -231,6 +292,12 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws     IndexOutOfBoundsException  if {@code index} is
      *             negative or greater than or equal to {@code length()}.
      */
+    /**
+     * 获取字符序列中指定位置的字符，范围为0到count，
+     * 超出范围抛StringIndexOutOfBoundsException异常。
+     * @param index
+     * @return
+     */
     @Override
     public char charAt(int index) {
         if ((index < 0) || (index >= count))
@@ -259,12 +326,18 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *             argument is negative or not less than the length of this
      *             sequence.
      */
+    /**
+     * 获取字符序列中指定位置的字符，所对应的代码点，即ascii码。
+     * @param index
+     * @return
+     */
     public int codePointAt(int index) {
         if ((index < 0) || (index >= count)) {
             throw new StringIndexOutOfBoundsException(index);
         }
         return Character.codePointAtImpl(value, index, count);
     }
+
 
     /**
      * Returns the character (Unicode code point) before the specified
@@ -286,6 +359,11 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @exception IndexOutOfBoundsException if the {@code index}
      *            argument is less than 1 or greater than the length
      *            of this sequence.
+     */
+    /**
+     * 获取字符序列中指定位置的前一个位置的字符，所对应的代码点。
+     * @param index
+     * @return
      */
     public int codePointBefore(int index) {
         int i = index - 1;
@@ -377,6 +455,13 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *             {@code dst.length}
      *             </ul>
      */
+    /**
+     * 将字符序列中指定区间srcBegin到srcEnd内的字符拷贝到dst字符数组中从dstBegin开始往后的位置中。
+     * @param srcBegin
+     * @param srcEnd
+     * @param dst
+     * @param dstBegin
+     */
     public void getChars(int srcBegin, int srcEnd, char[] dst, int dstBegin)
     {
         if (srcBegin < 0)
@@ -401,6 +486,11 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @param      ch      the new character.
      * @throws     IndexOutOfBoundsException  if {@code index} is
      *             negative or greater than or equal to {@code length()}.
+     */
+    /**
+     * 设置字符序列中指定索引index位置的字符为ch。
+     * @param index
+     * @param ch
      */
     public void setCharAt(int index, char ch) {
         if ((index < 0) || (index >= count))
@@ -440,6 +530,14 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *
      * @param   str   a string.
      * @return  a reference to this object.
+     */
+    /**
+     * 1.首先判断所传参数是否为null，如果为null则调用appendNull方法，实际上就是在原字符序列后加上"null"序列。
+     * 2.如果不为null则进行扩容操作，最小值为count+len，这一步可能增加容量也可能不增加，当count+len小于或等于capacity就不用进行扩容。
+     * 3.然后再将参数的字符串序列添加到value中。
+     * 4.最后返回this,注意这里返回的是this，也就意味者，可以在一条语句中多次调用append方法，即大家所知的方法调用链。原理简单，但思想值得借鉴。asb.append("hello").append("world");
+     * @param str
+     * @return
      */
     public AbstractStringBuilder append(String str) {
         if (str == null)
@@ -751,6 +849,12 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *             is negative, greater than {@code length()}, or
      *             greater than {@code end}.
      */
+    /**
+     * 删除字符序列指定区间的内容。这个操作不改变原序列的容量。
+     * @param start
+     * @param end
+     * @return
+     */
     public AbstractStringBuilder delete(int start, int end) {
         if (start < 0)
             throw new StringIndexOutOfBoundsException(start);
@@ -819,6 +923,11 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *              is negative or greater than or equal to
      *              {@code length()}.
      */
+    /**
+     * 删除字符序列中指定索引index位置的字符
+     * @param index
+     * @return
+     */
     public AbstractStringBuilder deleteCharAt(int index) {
         if ((index < 0) || (index >= count))
             throw new StringIndexOutOfBoundsException(index);
@@ -845,6 +954,14 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @throws     StringIndexOutOfBoundsException  if {@code start}
      *             is negative, greater than {@code length()}, or
      *             greater than {@code end}.
+     */
+    /**
+     * 将原字符序列指定区间start到end区间内的内容替换为str,
+     * 替换过程中序列长度会改变，所以需要进行扩容和改就count的操作。
+     * @param start
+     * @param end
+     * @param str
+     * @return
      */
     public AbstractStringBuilder replace(int start, int end, String str) {
         if (start < 0)
@@ -876,6 +993,11 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return     The new string.
      * @throws     StringIndexOutOfBoundsException  if {@code start} is
      *             less than zero, or greater than the length of this object.
+     */
+    /**
+     * 切割原字符序列指定区间start到end内的内容，返回字符串形式。
+     * @param start
+     * @return
      */
     public String substring(int start) {
         return substring(start, count);
@@ -1026,6 +1148,12 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @param      str      a string.
      * @return     a reference to this object.
      * @throws     StringIndexOutOfBoundsException  if the offset is invalid.
+     */
+    /**
+     * insert系列作用是将给定定对象所对应的字符串插入到原序列的指定位置。insert系列同append系列类似，只不过append是在原序列末尾添加元素，insert是在指定位置插入元素。
+     * @param offset
+     * @param str
+     * @return
      */
     public AbstractStringBuilder insert(int offset, String str) {
         if ((offset < 0) || (offset > length()))
@@ -1325,6 +1453,11 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *          such substring is returned; if it does not occur as a
      *          substring, {@code -1} is returned.
      */
+    /**
+     * 查询给定字符串在原字符序列中第一次出现的位置。调用的其实是String类的indexOf方法
+     * @param str
+     * @return
+     */
     public int indexOf(String str) {
         return indexOf(str, 0);
     }
@@ -1409,6 +1542,15 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      *
      * @return  a reference to this object.
      */
+    /**
+     * 该方法用于将字符序列反转
+     * 1.hasSurrogates用于判断字符序列中是否包含surrogates pair
+     * 2.将字符反转,count为数组长度，因为是从0开始的所以这里需要减1。具体转换是第一个字符与最后一个字符对调，第二个字符与倒数第二个字符对调，依次类推
+     * 3.实际上上述操作只需要循环(n-1) /2 + 1次[判断条件j>=0所以要+1次,源码中>>1就是除以2]就可以了，如数组长度为9则需要循环 (9-1-1)/2 +1 = 4次,9个字符对调次，第5个位置的字符不用换，如果长度为10需要循环(10-1-1)/2 +1 = 5次
+     * 4.剩下的工作就是两个位置的元素互换。
+     * 5.如果序列中包含surrogates pair 则执行reverseAllValidSurrogatePairs方法
+     * @return
+     */
     public AbstractStringBuilder reverse() {
         boolean hasSurrogates = false;
         int n = count - 1;
@@ -1429,6 +1571,10 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
         return this;
     }
 
+    /**
+     * Surrogate Pair是UTF-16中用于扩展字符而使用的编码方式，是一种采用四个字节(两个UTF-16编码)来表示一个字符。
+     * char在java中是16位的，刚好是一个UTF-16编码。而字符串中可能含有Surrogate Pair,但他们是一个单一完整的字符，只不过是用两个char来表示而已，因此在反转字符串的过程中Surrogate Pairs 是不应该被反转的。而reverseAllValidSurrogatePairs方法就是对Surrogate Pair进行处理。
+     */
     /** Outlined helper method for reverse() */
     private void reverseAllValidSurrogatePairs() {
         for (int i = 0; i < count - 1; i++) {
@@ -1452,6 +1598,13 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * {@code String}.
      *
      * @return  a string representation of this sequence of characters.
+     */
+    /**
+     * 学习学习
+     */
+    /**
+     * 需要子类自己去实现
+     * @return
      */
     @Override
     public abstract String toString();

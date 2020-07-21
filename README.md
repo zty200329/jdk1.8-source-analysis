@@ -10,4 +10,6 @@
 # 我的阅读笔记
 ## java.lang
 [Object](https://blog.csdn.net/qq_43561507/article/details/107398267)  
-[String](https://blog.csdn.net/qq_43561507/article/details/107405982)
+[String](https://blog.csdn.net/qq_43561507/article/details/107405982)  
+[AbstractStringBuilder](https://blog.csdn.net/qq_43561507/article/details/107416481)  
+[StringBuilder和StringBuffer](https://blog.csdn.net/qq_43561507/article/details/107424310)
