@@ -2221,6 +2221,11 @@ public final class String
      * @return true if this string contains {@code s}, false otherwise
      * @since 1.5
      */
+    /**
+     * 当且仅当此字符串包含指定的*字符值序列时，才返回true。
+     * @param s
+     * @return
+     */
     public boolean contains(CharSequence s) {
         return indexOf(s.toString()) > -1;
     }
