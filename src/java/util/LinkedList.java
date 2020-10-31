@@ -80,10 +80,18 @@ import java.util.function.Consumer;
  * @param <E> the type of elements held in this collection
  */
 
+/**
+ * 实现了List和Deque的双端链表
+ * 支持高效的插入和删除操作
+ * 使得LinkedList类也具有队列的特性;
+ * LinkedList不是线程安全的，如果想使LinkedList变成线程安全的，可以调用静态类Collections类中的方法：
+ * @param <E>
+ */
 public class LinkedList<E>
     extends AbstractSequentialList<E>
     implements List<E>, Deque<E>, Cloneable, java.io.Serializable
 {
+
     transient int size = 0;
 
     /**
@@ -136,15 +144,16 @@ public class LinkedList<E>
 
     /**
      * Links e as last element.
+     * 链接使e作为最后一个元素
      */
     void linkLast(E e) {
         final Node<E> l = last;
         final Node<E> newNode = new Node<>(l, e, null);
-        last = newNode;
+        last = newNode;//新建的节点
         if (l == null)
             first = newNode;
         else
-            l.next = newNode;
+            l.next = newNode;//指向下一个元素
         size++;
         modCount++;
     }
@@ -335,7 +344,7 @@ public class LinkedList<E>
      * @return {@code true} (as specified by {@link Collection#add})
      */
     public boolean add(E e) {
-        linkLast(e);
+        linkLast(e);//只调用了这个放啊
         return true;
     }
 
@@ -503,12 +512,13 @@ public class LinkedList<E>
      * @param element element to be inserted
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
+    //在指定位置添加元素
     public void add(int index, E element) {
-        checkPositionIndex(index);
+        checkPositionIndex(index);//检查索引是否处于正确位置
 
-        if (index == size)
+        if (index == size)//添加到链表尾部
             linkLast(element);
-        else
+        else//添加到中间
             linkBefore(element, node(index));
     }
 

@@ -377,6 +377,9 @@ public abstract class AbstractQueuedSynchronizer
      * expert group, for helpful ideas, discussions, and critiques
      * on the design of this class.
      */
+    /**
+     * 利用双向链表和CAS实现一个阻塞队列
+     */
     static final class Node {
         /** Marker to indicate a node is waiting in shared mode */
         static final Node SHARED = new Node();
@@ -463,6 +466,7 @@ public abstract class AbstractQueuedSynchronizer
          * The thread that enqueued this node.  Initialized on
          * construction and nulled out after use.
          */
+        //每个Node对应一个被阻塞的线程
         volatile Thread thread;
 
         /**
@@ -529,6 +533,8 @@ public abstract class AbstractQueuedSynchronizer
 
     /**
      * The synchronization state.
+     * 记录锁的状态，通过CAS修改
+     * state>1表示线程重入了该锁
      */
     private volatile int state;
 
@@ -602,18 +608,20 @@ public abstract class AbstractQueuedSynchronizer
      * @param mode Node.EXCLUSIVE for exclusive, Node.SHARED for shared
      * @return the new node
      */
+    //只是把Thread对象放入一个队列中而已，线程本身并未阻塞
     private Node addWaiter(Node mode) {
         Node node = new Node(Thread.currentThread(), mode);
         // Try the fast path of enq; backup to full enq on failure
         Node pred = tail;
         if (pred != null) {
             node.prev = pred;
-            if (compareAndSetTail(pred, node)) {
+            if (compareAndSetTail(pred, node)) {//先尝试加到队列尾部，如果不成功，则执行下面的enq函数
                 pred.next = node;
                 return node;
             }
         }
-        enq(node);
+        enq(node);//enq内部会进行队列的初始化，新建一个空的Node。然后不断尝试自旋
+        //直至成功加入队列尾部
         return node;
     }
 
@@ -1195,7 +1203,8 @@ public abstract class AbstractQueuedSynchronizer
      *        can represent anything you like.
      */
     public final void acquire(int arg) {
-        if (!tryAcquire(arg) &&
+        if (!tryAcquire(arg) &&//虚函数，再次尝试拿锁
+                //把线程放入阻塞队列，然后阻塞该队列
             acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
             selfInterrupt();
     }

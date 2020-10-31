@@ -141,6 +141,10 @@ import java.util.stream.StreamSupport;
  * @since 1.2
  */
 
+/**
+ * 它继承了Iterable接口，提供元素遍历的功能
+ * @param <E>
+ */
 public interface Collection<E> extends Iterable<E> {
     // Query Operations
 
@@ -151,6 +155,8 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return the number of elements in this collection
      */
+
+    //返回集合中存在的元素。如果元素的数目超过Integer.MAX_VALUE,返回Integer.MAX_VALUE
     int size();
 
     /**
@@ -158,6 +164,7 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return <tt>true</tt> if this collection contains no elements
      */
+    //当集合不包含任何元素时，返回true
     boolean isEmpty();
 
     /**
@@ -176,6 +183,7 @@ public interface Collection<E> extends Iterable<E> {
      *         collection does not permit null elements
      *         (<a href="#optional-restrictions">optional</a>)
      */
+    //如果集合中包含至少一个指定对象,返回true
     boolean contains(Object o);
 
     /**
@@ -186,6 +194,7 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return an <tt>Iterator</tt> over the elements in this collection
      */
+    //返回可以遍历集合元素的迭代器
     Iterator<E> iterator();
 
     /**
@@ -204,6 +213,7 @@ public interface Collection<E> extends Iterable<E> {
      *
      * @return an array containing all of the elements in this collection
      */
+    //返回集合中所有元素组成的数组，数组元素的返回顺序要和迭代器访问集合元素的返回顺序一样
     Object[] toArray();
 
     /**
@@ -249,6 +259,7 @@ public interface Collection<E> extends Iterable<E> {
      *         this collection
      * @throws NullPointerException if the specified array is null
      */
+    //返回包含此 collection 中所有元素的数组；返回数组的运行时类型与指定数组的运行时类型相同。
     <T> T[] toArray(T[] a);
 
     // Modification Operations
@@ -286,6 +297,7 @@ public interface Collection<E> extends Iterable<E> {
      * @throws IllegalStateException if the element cannot be added at this
      *         time due to insertion restrictions
      */
+    //如果集合不允许重复元素，且集合中已经含有该元素，返回false
     boolean add(E e);
 
     /**
@@ -308,6 +320,7 @@ public interface Collection<E> extends Iterable<E> {
      * @throws UnsupportedOperationException if the <tt>remove</tt> operation
      *         is not supported by this collection
      */
+    //从此 collection 中移除指定元素的单个实例，如果集合中存在指定元素返回true。
     boolean remove(Object o);
 
 
@@ -331,6 +344,7 @@ public interface Collection<E> extends Iterable<E> {
      *         or if the specified collection is null.
      * @see    #contains(Object)
      */
+    //如果此 collection 包含指定 collection 中的所有元素，则返回 true。
     boolean containsAll(Collection<?> c);
 
     /**

@@ -68,6 +68,10 @@ package java.util;
  * @since 1.2
  */
 
+/**
+ * 实现List接口
+ * @param <E>
+ */
 public abstract class AbstractList<E> extends AbstractCollection<E> implements List<E> {
     /**
      * Sole constructor.  (For invocation by subclass constructors, typically
@@ -104,7 +108,13 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException if some property of this element
      *         prevents it from being added to this list
      */
+    //下面提供了增、删、改的动作
+    //加入一个元素
     public boolean add(E e) {
+        /**
+         * 带有定位功能，就是可以加入到List的指定位置
+         * 那么调用add就代表，加入到最末位置,所以使用的：add(size()//最末位置,e);
+         */
         add(size(), e);
         return true;
     }
@@ -114,6 +124,9 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      *
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
+
+    //abstract 放到public前面竟然也可以，这就是源码的惊喜啊
+    //不过，你又没实现，而且Collection和List接口中都有，干嘛又写一遍？难道是提醒？
     abstract public E get(int index);
 
     /**
@@ -128,6 +141,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException      {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
+    //修改某个位置的元素
     public E set(int index, E element) {
         throw new UnsupportedOperationException();
     }
@@ -144,6 +158,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException      {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
+    //这个需要等着具体实现了，因为数组和链表的实现形式不一样
     public void add(int index, E element) {
         throw new UnsupportedOperationException();
     }
@@ -157,6 +172,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws UnsupportedOperationException {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
+    //同上
     public E remove(int index) {
         throw new UnsupportedOperationException();
     }
@@ -164,6 +180,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
 
     // Search Operations
 
+    //下面是搜索的一些操作
     /**
      * {@inheritDoc}
      *
@@ -174,6 +191,8 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws ClassCastException   {@inheritDoc}
      * @throws NullPointerException {@inheritDoc}
      */
+    //获取所在的位置,还是迭代器，不过这次升级了一下使用的是ListIterator迭代器
+    //这个找的是第一次发现这个元素的地方
     public int indexOf(Object o) {
         ListIterator<E> it = listIterator();
         if (o==null) {
@@ -199,6 +218,8 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws ClassCastException   {@inheritDoc}
      * @throws NullPointerException {@inheritDoc}
      */
+    //这个方法是找到最后一次发现的地方
+    //其实，从后往前找到的第一个就是最后一个找到的
     public int lastIndexOf(Object o) {
         ListIterator<E> it = listIterator(size());
         if (o==null) {
@@ -214,7 +235,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
 
-    // Bulk Operations
+    // 批量操作
 
     /**
      * Removes all of the elements from this list (optional operation).
@@ -230,6 +251,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws UnsupportedOperationException if the {@code clear} operation
      *         is not supported by this list
      */
+    //这个ArrayList重写了
     public void clear() {
         removeRange(0, size());
     }
@@ -253,6 +275,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException      {@inheritDoc}
      * @throws IndexOutOfBoundsException     {@inheritDoc}
      */
+    //和AbstractCollection差不多的实现，只不过是不用迭代器了
     public boolean addAll(int index, Collection<? extends E> c) {
         rangeCheckForAdd(index);
         boolean modified = false;
@@ -284,6 +307,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      *
      * @return an iterator over the elements in this list in proper sequence
      */
+    //迭代器代码
     public Iterator<E> iterator() {
         return new Itr();
     }
@@ -338,6 +362,9 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
          * previous.  Reset to -1 if this element is deleted by a call
          * to remove.
          */
+        /**
+         * 最近一次调用next或* previous返回的元素的索引。如果通过调用*删除此元素，则将其重置为-1
+         */
         int lastRet = -1;
 
         /**
@@ -347,10 +374,13 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
          */
         int expectedModCount = modCount;
 
+        //用游标(cursor)和size()比较，看看到头没有
+        //比较的时候并没有移动游标
         public boolean hasNext() {
             return cursor != size();
         }
 
+        //根据游标获取，然后游标+1
         public E next() {
             checkForComodification();
             try {
@@ -381,12 +411,21 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
             }
         }
 
+        //这个主要是检查一下，
+        //modCount是修改的次数，expectedModCount是期望的修改次数
+        //不同的是modCount是外面的对象持有并修改，expectedModCount是Iter迭代器持有
+        //在Iter初始化的时候，来了一句:expectedModCount = modCount;
+        //所以，当你多线程使用Iter(迭代器)修改一个ArrayList或者LinkedList的时候
+        //就有可能出现这个异常，当然了他俩不能满足多线程的问题
+
         final void checkForComodification() {
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
         }
     }
 
+    //更加细化了一下迭代器，提供往前面走，和往后面走的方式，也就是next和previous的方式
+    //这样子，List就像一个双端链表一样被迭代
     private class ListItr extends Itr implements ListIterator<E> {
         ListItr(int index) {
             cursor = index;
@@ -480,6 +519,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
      * @throws IllegalArgumentException if the endpoint indices are out of order
      *         {@code (fromIndex > toIndex)}
      */
+    //有点像String的substring方法
     public List<E> subList(int fromIndex, int toIndex) {
         return (this instanceof RandomAccess ?
                 new RandomAccessSubList<>(this, fromIndex, toIndex) :
@@ -487,6 +527,7 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
     }
 
     // Comparison and hashing
+    // 重写Object的equals和hashCode方法
 
     /**
      * Compares the specified object with this list for equality.  Returns
@@ -609,6 +650,10 @@ public abstract class AbstractList<E> extends AbstractCollection<E> implements L
         return "Index: "+index+", Size: "+size();
     }
 }
+//下面这俩类就是获取List的子List，也就是对父List对象，框定一个范围，有点类似于Python或者Go的slice(切片操作)
+//但是注意一点：SubList并没有进行任何copy操作，就像是拿到了两个指针指向了父List对象的一个范围
+//然后，你在SubList的操作(增删改)也会影响到父List
+//这个慎用，不小心就会出问题
 
 class SubList<E> extends AbstractList<E> {
     private final AbstractList<E> l;

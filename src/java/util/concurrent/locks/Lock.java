@@ -181,6 +181,7 @@ public interface Lock {
      * circumstances and the exception type must be documented by that
      * {@code Lock} implementation.
      */
+    //不可被中断
     void lock();
 
     /**

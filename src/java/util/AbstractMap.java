@@ -108,9 +108,11 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * @throws ClassCastException   {@inheritDoc}
      * @throws NullPointerException {@inheritDoc}
      */
+    //判断是否包含值
     public boolean containsValue(Object value) {
         Iterator<Entry<K,V>> i = entrySet().iterator();
         if (value==null) {
+            //对map进行迭代，找到则返回true
             while (i.hasNext()) {
                 Entry<K,V> e = i.next();
                 if (e.getValue()==null)
@@ -140,6 +142,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * @throws ClassCastException   {@inheritDoc}
      * @throws NullPointerException {@inheritDoc}
      */
+    //是否包含key
     public boolean containsKey(Object key) {
         Iterator<Map.Entry<K,V>> i = entrySet().iterator();
         if (key==null) {
@@ -172,8 +175,14 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * @throws ClassCastException            {@inheritDoc}
      * @throws NullPointerException          {@inheritDoc}
      */
+    /**
+     * 获取key的值
+     * @param key
+     * @return
+     */
     public V get(Object key) {
         Iterator<Entry<K,V>> i = entrySet().iterator();
+        // key为 null，迭代 map 如果 key 有是 null 的则返回对应值
         if (key==null) {
             while (i.hasNext()) {
                 Entry<K,V> e = i.next();
@@ -205,6 +214,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * @throws NullPointerException          {@inheritDoc}
      * @throws IllegalArgumentException      {@inheritDoc}
      */
+    //put方法需要子类实现
     public V put(K key, V value) {
         throw new UnsupportedOperationException();
     }
@@ -231,6 +241,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * @throws ClassCastException            {@inheritDoc}
      * @throws NullPointerException          {@inheritDoc}
      */
+    //删除
     public V remove(Object key) {
         Iterator<Entry<K,V>> i = entrySet().iterator();
         Entry<K,V> correctEntry = null;
@@ -276,6 +287,10 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * @throws NullPointerException          {@inheritDoc}
      * @throws IllegalArgumentException      {@inheritDoc}
      */
+    /**
+     * 全量put
+     * @param m
+     */
     public void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<? extends K, ? extends V> e : m.entrySet())
             put(e.getKey(), e.getValue());
@@ -294,6 +309,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * @throws UnsupportedOperationException {@inheritDoc}
      */
     public void clear() {
+        //调用迭代器删除
         entrySet().clear();
     }
 
@@ -343,10 +359,13 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * is performed, so there is a slight chance that multiple calls to this
      * method will not all return the same set.
      */
+    //返回key集合
     public Set<K> keySet() {
         Set<K> ks = keySet;
+        // ks 是 null，即没有被初始化过
         if (ks == null) {
             ks = new AbstractSet<K>() {
+                // 获取迭代器
                 public Iterator<K> iterator() {
                     return new Iterator<K>() {
                         private Iterator<Entry<K,V>> i = entrySet().iterator();
@@ -381,6 +400,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
                     return AbstractMap.this.containsKey(k);
                 }
             };
+            // 赋值成员变量 keySet
             keySet = ks;
         }
         return ks;
@@ -401,6 +421,9 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
      * returned in response to all subsequent calls.  No synchronization is
      * performed, so there is a slight chance that multiple calls to this
      * method will not all return the same collection.
+     */
+    /**
+     * 获取 map 内所有 value
      */
     public Collection<V> values() {
         Collection<V> vals = values;
@@ -476,9 +499,10 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
         if (o == this)
             return true;
 
-        if (!(o instanceof Map))
+        if (!(o instanceof Map))//判断参数是否为Map类型，要equals首先得是同一个类型
             return false;
-        Map<?,?> m = (Map<?,?>) o;
+        Map<?,?> m = (Map<?,?>) o;//将Object类型强转为Map.Entry类型，这里参数使用“?”而不是“K, V”是因为泛型在运行时类型会被擦除
+        //编译器不知道具体的K,V是什么类型
         if (m.size() != size())
             return false;
 
@@ -660,6 +684,7 @@ public abstract class AbstractMap<K,V> implements Map<K,V> {
          * @param value new value to be stored in this entry
          * @return the old value corresponding to the entry
          */
+        //返回的是旧值
         public V setValue(V value) {
             V oldValue = this.value;
             this.value = value;

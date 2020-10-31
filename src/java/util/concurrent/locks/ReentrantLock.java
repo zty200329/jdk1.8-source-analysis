@@ -113,6 +113,9 @@ public class ReentrantLock implements Lock, java.io.Serializable {
      * into fair and nonfair versions below. Uses AQS state to
      * represent the number of holds on the lock.
      */
+    /**
+     * 两个子类，对应公平锁和非公平锁
+     */
     abstract static class Sync extends AbstractQueuedSynchronizer {
         private static final long serialVersionUID = -5179523762034025860L;
 
@@ -154,6 +157,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
                 free = true;
                 setExclusiveOwnerThread(null);
             }
+            //关键点：没有使用CAS，而是直接用set。因为是排他锁，只有一个线程能调减state值
             setState(c);
             return free;
         }
@@ -203,6 +207,9 @@ public class ReentrantLock implements Lock, java.io.Serializable {
          * acquire on failure.
          */
         final void lock() {
+            //一上来就尝试修改state值，也就是抢锁
+            //不考虑队列中有没有其他线程在排队
+            //是非公平的
             if (compareAndSetState(0, 1))
                 setExclusiveOwnerThread(Thread.currentThread());
             else
@@ -220,6 +227,7 @@ public class ReentrantLock implements Lock, java.io.Serializable {
     static final class FairSync extends Sync {
         private static final long serialVersionUID = -3000897897090466540L;
 
+        //没有直接抢
         final void lock() {
             acquire(1);
         }
