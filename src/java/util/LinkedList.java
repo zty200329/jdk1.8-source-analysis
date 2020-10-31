@@ -392,7 +392,7 @@ public class LinkedList<E>
      * @return {@code true} if this list changed as a result of the call
      * @throws NullPointerException if the specified collection is null
      */
-    public boolean addAll(Collection<? extends E> c) {
+    public boolean addAll(Collection<? extends E> c) {//将集合插入到链表尾部
         return addAll(size, c);
     }
 
@@ -411,26 +411,43 @@ public class LinkedList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      * @throws NullPointerException if the specified collection is null
      */
+    /**
+     * 1.检查index范围是否在size之内
+     * 2.toArray()方法把集合的数据存到对象数组中
+     * 3.得到插入位置的前驱和后继节点
+     * 4.遍历数据，将数据插入到指定位置
+     * @param index
+     * @param c
+     * @return
+     */
     public boolean addAll(int index, Collection<? extends E> c) {
+        //che1:检查index范围是否在size之内ckPositionIndex(index);
         checkPositionIndex(index);
 
+        //2:toArray()方法把集合的数据存到对象数组中
         Object[] a = c.toArray();
         int numNew = a.length;
         if (numNew == 0)
             return false;
 
+        //3：得到插入位置的前驱节点和后继节点
         Node<E> pred, succ;
+        //如果插入位置为尾部，前驱节点为last，后继节点为null
         if (index == size) {
             succ = null;
             pred = last;
         } else {
+            //否则，调用node()方法得到后继节点，再得到前驱节点
             succ = node(index);
             pred = succ.prev;
         }
 
+        // 4：遍历数据将数据插入
         for (Object o : a) {
             @SuppressWarnings("unchecked") E e = (E) o;
+            //创建新节点
             Node<E> newNode = new Node<>(pred, e, null);
+            //如果插入位置在链表头部
             if (pred == null)
                 first = newNode;
             else
@@ -438,6 +455,7 @@ public class LinkedList<E>
             pred = newNode;
         }
 
+        //如果插入位置在尾部，重置last节点
         if (succ == null) {
             last = pred;
         } else {
@@ -482,7 +500,9 @@ public class LinkedList<E>
      * @throws IndexOutOfBoundsException {@inheritDoc}
      */
     public E get(int index) {
+        //检查index范围是否在size之内
         checkElementIndex(index);
+        //调用Node(index)去找到index对应的node然后返回它的值
         return node(index).item;
     }
 
@@ -519,7 +539,7 @@ public class LinkedList<E>
         if (index == size)//添加到链表尾部
             linkLast(element);
         else//添加到中间
-            linkBefore(element, node(index));
+            linkBefore(element, node(index));//node找对应到节点
     }
 
     /**
