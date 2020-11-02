@@ -856,17 +856,22 @@ public class ArrayList<E> extends AbstractList<E>
     private void writeObject(java.io.ObjectOutputStream s)
         throws java.io.IOException{
         // Write out element count, and any hidden stuff
+        // 防止序列化期间有修改
         int expectedModCount = modCount;
+        // 写出非transient非static属性（会写出size属性）
         s.defaultWriteObject();
 
         // Write out size as capacity for behavioural compatibility with clone()
+        // 写出大小作为与clone（）行为兼容的容量
         s.writeInt(size);
 
         // Write out all elements in the proper order.
+        //依次写出元素
         for (int i=0; i<size; i++) {
             s.writeObject(elementData[i]);
         }
 
+        //如果有修改，抛出异常
         if (modCount != expectedModCount) {
             throw new ConcurrentModificationException();
         }
@@ -878,22 +883,28 @@ public class ArrayList<E> extends AbstractList<E>
      */
     private void readObject(java.io.ObjectInputStream s)
         throws java.io.IOException, ClassNotFoundException {
+        // 声明为空数组
         elementData = EMPTY_ELEMENTDATA;
 
         // Read in size, and any hidden stuff
+        // 读入非transient非static属性（会读取size属性）
         s.defaultReadObject();
 
         // Read in capacity
+        // 读入元素个数，没什么用，只是因为写出的时候写了size属性，读的时候也要按顺序来读
         s.readInt(); // ignored
 
         if (size > 0) {
             // be like clone(), allocate array based upon size not capacity
+            // 计算容量
             int capacity = calculateCapacity(elementData, size);
             SharedSecrets.getJavaOISAccess().checkArray(s, Object[].class, capacity);
+            // 检查是否需要扩容
             ensureCapacityInternal(size);
 
             Object[] a = elementData;
             // Read in all elements in the proper order.
+            // 依次读取元素到数组中
             for (int i=0; i<size; i++) {
                 a[i] = s.readObject();
             }
