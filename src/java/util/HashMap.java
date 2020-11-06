@@ -141,6 +141,8 @@ import sun.misc.SharedSecrets;
 //当链表长度大于阈值（默认为 8）时，将链表转化为红黑树（将链表转换成红黑树前会判断，
 // 如果当前数组的长度小于 64，那么会选择先进行数组扩容，而不是转换为红黑树），
 // 以减少搜索时间，具体可以参考 treeifyBin方法。
+
+    //当链表长度大于阈值8 并且当前数组的长度64，此时会改为红黑树存储
 public class HashMap<K,V> extends AbstractMap<K,V>
     implements Map<K,V>, Cloneable, Serializable {
 
