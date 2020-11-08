@@ -868,8 +868,10 @@ public abstract class AbstractQueuedSynchronizer
             boolean interrupted = false;
             for (;;) {
                 final Node p = node.predecessor();
-                if (p == head && tryAcquire(arg)) {
-                    setHead(node);
+                if (p == head && tryAcquire(arg)) {//被唤醒，如果自己在队列头部（自己前一个
+                                                      //节点是head指向的空节点），则尝试按锁
+                    setHead(node);//拿锁成功
+
                     p.next = null; // help GC
                     failed = false;
                     return interrupted;
